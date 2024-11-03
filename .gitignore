@@ -1,0 +1,7 @@
+# Carpeta del entorno
+henry_project/
+
+# Carpeta de los datasets completos
+movies-datasets/
+
+!.gitignore
