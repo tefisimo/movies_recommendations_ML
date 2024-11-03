@@ -80,7 +80,7 @@ def score_titulo(titulo_pelicula: str):
     # Crea una lista vacia para almacenar las respuestas
     respuesta = []
     # Itera sobre las peliculas ordenadas
-    for _, row in peliculas_ordenadas.iterrows():
+    for index, row in peliculas_ordenadas.iterrows():
         # Extrae el titulo, año de estreno, y el valor de popularidad para cada pelicula
         title = row["title"]
         year_released = row["release_year"]
@@ -167,9 +167,6 @@ def get_director(director_name: str):
             'retorno_total_director': total_return,
             'total_peliculas': film_count,
             'peliculas': movies_table.to_dict(orient='records')}
-
-# Remove rows with missing or null values in relevant columns
-df.drop(columns=['Director','overview', 'budget', 'id', 'revenue', 'release_date', 'status', 'runtime', 'actor_name', 'genre', 'character', 'collection', 'status', 'tagline', 'vote_count', 'id_collection', 'genre', 'companies_id', 'companies_name', 'country_name', 'release_year', 'return', 'character', 'lang_name'], inplace=True)
 
 # Function to transform the columns for the vectrizer
 def clean_column_values(df, column_name):
