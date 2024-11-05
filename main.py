@@ -92,32 +92,32 @@ def score_titulo(titulo_pelicula: str):
 
 @app.get("/votos_titulo/{titulo}")
 def votos_titulo(titulo:str):
-    # Filter films based on the specified film title
+    # Filtrar las peliculas por el nombre especifico de la pelicula
     peliculas = df[df["title"].str.lower() == titulo.lower()]
-    # Check if films are found
+    # Chequea si consiguio la pelicula, en el caso que dicha variable este vacia retorna un mensaje
     if peliculas.empty:
         return "No se encontró la filmación especificada."
     
-    # Initialize an empty list to store the responses
+    # Crea una lista vacia para almacenar las respuestas
     respuestas = []
     
-    # Iterate over the filtered films
+    # Itera sobre la peliculas filtrada
     for _, row in peliculas.iterrows():
         cantidad_votos = row["vote_count"]
         
         if cantidad_votos < 2000:
-            continue  # Skip this movie if you don't meet the minimum number of votes
+            continue  # Pasa de la pelicula si esta no cumple con la cantidad de votos minimos
         
-        # Extract the vote count, title, release year, and average vote of each film
+        # Extrae la cantidad de votos, el titulo, el año de estreno y el promedio de votos de cada pelicula
         titulo = row["title"]
         anio = row["release_year"]
         promedio_votos = row["vote_average"]
 
-        # Create a dictionary for the film with its information
+        # Crea un diccionario para pelicula con su informacion
         respuesta = {'titulo': titulo, 'anio': anio, 'voto_total': cantidad_votos, 'voto_promedio': promedio_votos}
         respuestas.append(respuesta)
 
-    # Check if no films meet the minimum vote count requirement
+    # Cheque si la pelicula no cumple con los valores minimos requeridos y arroja una respuesta
     if not respuestas:
         return "No se encontraron peliculas que cumplan con la cantidad mínima de votos requerida (2000 votos)."
     
@@ -125,41 +125,41 @@ def votos_titulo(titulo:str):
 
 @app.get("/get_actor/{actor_name}")
 def get_actor(actor_name: str):
-    # Filter films based on the specified actor name
+    # Filtra peliculas basado en el nombre de un actor
     peliculas_actor = df[df["actor_name_funct"].str.contains(fr"\b{actor_name}\b", case=False, regex=True, na=False)]
     
-    # Check if films are found for the actor
+    # Confirma si alguna pelicula se logro conseguir a partir del nombre del actor
     if peliculas_actor.empty:
         return "The specified actor was not found."
     
-    # Calculate the number of films for the actor
+    # Calcula el numero de peliculas para el actor
     film_count = len(peliculas_actor)
     
-    # Calculate the total return of the actor's films
+    # Calcula la suma de los retornos para las peliculas relacionadas al actor
     total_return = round(peliculas_actor["return"].sum(),2)
     
-    # Calculate the average return per film
+    # Calcula el retorno promedio por pelicula
     average_return = round(total_return / film_count,2)
     
-    # Return a dictionary containing the actor's name, the number of films, total return, and average return
+    # Retorna un diccionario que contiene el nombre del actor, el numero de peliculas, el retorno total, y el promedio de retorno
     return {'actor': actor_name, 'film_count': film_count, 'total_return': total_return, 'average_return': average_return}
 
 @app.get("/get_director/{director_name}")
 def get_director(director_name: str):
-    # Filter movies based on the specified director name
+    # Filtra peliculas basado en el nombre del director
     director_peliculas = df[df['Director'].str.contains(fr"\b{director_name}\b", case=False, regex=True, na=False)]
 
-    # Check if movies are found for the director
+    # Confirma si alguna pelicula se logro conseguir a partir del nombre del director
     if director_peliculas.empty:
         return "The specified director was not found."
 
-    # Calculate the number of movies for the director
+    # Calcula el numero de peliculas para el director
     film_count = len(director_peliculas)
 
-    # Calculate the total return of the director's movies
+    # # Calcula la suma de los retornos para las peliculas relacionadas al director
     total_return = round(director_peliculas['return'].sum(), 2)
 
-    # Create a table of movies with selected columns and round the values to 2 decimal places
+    # Crea una tabla de peliculas con las columnas seleccionadas
     movies_table = round(director_peliculas[['title', 'release_year', 'return', 'budget', 'revenue']], 2)
 
     
@@ -168,24 +168,32 @@ def get_director(director_name: str):
             'total_peliculas': film_count,
             'peliculas': movies_table.to_dict(orient='records')}
 
-# Function to transform the columns for the vectrizer
+# Funcion para transformacion y limpiezas de columnas a utilizar en el vectorizador
 def clean_column_values(df, column_name):
+    """" Esta funcion permite la limpieza de alguna columna que contenga alguno de los
+    siguientes caracteres: [-]-,-.
+    ------------------------------
+    Argumentos.
+    df: el dataset de donde proviene la columna
+    column_name: el nombre de la columna a limpiar."""
     df[column_name] = df[column_name].astype(str).str.replace('[', '', regex=False)
     df[column_name] = df[column_name].astype(str).str.replace(']', '', regex=False)
     df[column_name] = df[column_name].astype(str).str.replace("'", '', regex=False)
     df[column_name] = df[column_name].astype(str).str.replace(",", '', regex=False)
     return df
 
+# Aplicamos la funcion para las columnas "actor_id" y "genre_id"
 clean_column_values(df,'actor_id')
 clean_column_values(df,'genre_id')
 
 
-# Create a term frequency matrix using CountVectorizer for relevant columns
+# Creamos una matrix de frecuencia de terminos usando 'CountVectorizer' para las columnas que consideramos relevantes
 vectorizer = CountVectorizer()
 term_matrix = vectorizer.fit_transform(df['genre_id'] + ' ' + df['actor_id'] + ' ' + df['title'] + ' ' + df['popularity'].astype(str) + ' ' + df['vote_average'].astype(str))
 
-# Function to get movies similar to a given movie
 def obtener_peliculas_similares(titulo, n=5):
+    """" Esta funcion nos permite obtener 5 peliculas similares a partir de una dada
+    titulo: nombre de la pelicula."""
     titulo = titulo.lower()
     indice_pelicula = df[df['title'].str.lower() == titulo].index
     if len(indice_pelicula) == 0:
@@ -194,9 +202,9 @@ def obtener_peliculas_similares(titulo, n=5):
     indice_pelicula = indice_pelicula[0]
     vector_pelicula = term_matrix[indice_pelicula]
     similaridades = cosine_similarity(vector_pelicula, term_matrix)[0]
-    indices_similares = similaridades.argsort()[::-1][1:n+1]  # Exclude the given movie
+    indices_similares = similaridades.argsort()[::-1][1:n+1]  # Excluye la pelicula especificada
 
-    # Sort the similar movies based on similarity score
+    # Ordena las peliculas similares basado en el score de similitud
     indices_similares_sorted = sorted(indices_similares, key=lambda x: similaridades[x], reverse=True)
     peliculas_similares = df.iloc[indices_similares_sorted]['title'].tolist()
     return peliculas_similares
