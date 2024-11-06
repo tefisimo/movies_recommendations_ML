@@ -138,6 +138,7 @@ Se realizó el análisis exploratorio de datos con el objetivo de identificar in
 https://movies-recommendations-ml.onrender.com/docs
 
 ## Video del proyecto:
+https://www.loom.com/share/3480fdd69d3a495d98a0eccacb9754a4?sid=622a49c0-92a9-46ed-b549-27924fd4ac58
 https://drive.google.com/file/d/1ZwJAUO-YFswxdj3uyGRyQ41iT2Y1RlWv/view?usp=drive_link
 
 ## Créditos
